@@ -1,0 +1,24 @@
+﻿@page "/nsg-info"
+
+@using Microsoft.Identity.Web
+@using AzureNsgUpdater.Data
+
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
+@inject NetworkSecurityGroupService NetworkSecurityGroupService
+
+<h3>NsgInfo</h3>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var allNsgs = await NetworkSecurityGroupService.RetrieveAllNetworkSecurityGroupsAsync();
+            Console.WriteLine(allNsgs);
+        }
+        catch (Exception ex)
+        {
+            ConsentHandler.HandleException(ex);
+        }
+    }
+}

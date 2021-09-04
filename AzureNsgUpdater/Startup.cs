@@ -1,4 +1,5 @@
 using AzureNsgUpdater.Data;
+using AzureNsgUpdater.Classes;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -32,8 +33,11 @@ namespace AzureNsgUpdater
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            var initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
+            // singleton should be fine - the connection details should not change between requests or objects
+            IAzureAdSecretDetails azureAdSecretDetails = new AzureAdSecretDetails { TENANT_ID = Configuration["TENANT_ID"], CLIENT_ID = Configuration["CLIENT_ID"], CLIENT_SECRET = Configuration["CLIENT_SECRET"], SUBSCRIPTION_ID = Configuration["SUBSCRIPTION_ID"] };
+            services.AddSingleton(new NetworkSecurityGroupService(azureAdSecretDetails));
 
+            var initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
             var msIdentityConfiguration = Configuration.GetSection("AzureAd");
             msIdentityConfiguration.GetSection("TenantId").Value = Configuration["TENANT_ID"];
             msIdentityConfiguration.GetSection("ClientId").Value = Configuration["CLIENT_ID"];
