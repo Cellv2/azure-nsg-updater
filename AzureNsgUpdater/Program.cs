@@ -20,6 +20,8 @@ namespace AzureNsgUpdater
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    // secrets for development builds should automatically be added here
+                    // https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-5.0&tabs=windows
                     webBuilder.UseStartup<Startup>();
                 });
     }

@@ -34,17 +34,15 @@ namespace AzureNsgUpdater
         {
             var initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
 
-            var azureAdConfiguration = Configuration.GetSection("AzureAd");
-            azureAdConfiguration.GetSection("TenantId").Value = "";
-            azureAdConfiguration.GetSection("ClientId").Value = "";
-            azureAdConfiguration.GetSection("ClientSecret").Value = "";
-
+            var msIdentityConfiguration = Configuration.GetSection("AzureAd");
+            msIdentityConfiguration.GetSection("TenantId").Value = Configuration["TENANT_ID"];
+            msIdentityConfiguration.GetSection("ClientId").Value = Configuration["CLIENT_ID"];
+            msIdentityConfiguration.GetSection("ClientSecret").Value = Configuration["CLIENT_SECRET"];
             services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-                //.AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"))
-                .AddMicrosoftIdentityWebApp(azureAdConfiguration)
+                .AddMicrosoftIdentityWebApp(msIdentityConfiguration)
                     .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
-                        //.AddMicrosoftGraph(Configuration.GetSection("DownstreamApi"))
                         .AddInMemoryTokenCaches();
+
             services.AddControllersWithViews()
                 .AddMicrosoftIdentityUI();
 
@@ -57,6 +55,7 @@ namespace AzureNsgUpdater
             services.AddRazorPages();
             services.AddServerSideBlazor()
                 .AddMicrosoftIdentityConsentHandler();
+            
             services.AddSingleton<WeatherForecastService>();
 
         }
