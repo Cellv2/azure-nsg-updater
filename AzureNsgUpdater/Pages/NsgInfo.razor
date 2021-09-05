@@ -8,17 +8,56 @@
 
 <h3>NsgInfo</h3>
 
+@if (networkSecurityGroupPageDataList == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h1>Network Security Groups</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var nsg in networkSecurityGroupPageDataList)
+            {
+                <tr>
+                    <td>@nsg.Name</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
 @code {
+
+    private List<NetworkSecurityGroupPageData> networkSecurityGroupPageDataList = new List<NetworkSecurityGroupPageData>();
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
             var allNsgs = await NetworkSecurityGroupService.RetrieveAllNetworkSecurityGroupsAsync();
-            Console.WriteLine(allNsgs);
+
+            foreach (var nsg in allNsgs)
+            {
+                NetworkSecurityGroupPageData data = new NetworkSecurityGroupPageData();
+                data.Name = nsg.Name;
+
+                networkSecurityGroupPageDataList.Add(data);
+            }
         }
         catch (Exception ex)
         {
             ConsentHandler.HandleException(ex);
         }
+    }
+
+    public class NetworkSecurityGroupPageData
+    {
+        public string Name;
     }
 }

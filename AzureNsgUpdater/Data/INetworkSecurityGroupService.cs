@@ -7,5 +7,6 @@ namespace AzureNsgUpdater.Data
     public interface INetworkSecurityGroupService
     {
         Task<IPagedCollection<INetworkSecurityGroup>> RetrieveAllNetworkSecurityGroupsAsync();
+        void RetireveNetworkSecurityGroupRules();
     }
 }

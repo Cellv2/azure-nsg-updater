@@ -1,9 +1,9 @@
-﻿using AzureNsgUpdater.Classes;
-
-namespace AzureNsgUpdater.Data
+﻿namespace AzureNsgUpdater.Data
 {
     public interface IConfigurationService
     {
-        AzureAdSecretDetails RetrieveAzureAdSecretConfiguration();
+        Microsoft.Azure.Management.Fluent.IAzure GetAzureAppConnection();
+        Microsoft.Azure.Management.Fluent.IAzure RefreshAndReturnNewAzureAppConnection();
+
     }
 }
