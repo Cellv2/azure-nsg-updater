@@ -13,7 +13,7 @@ namespace AzureNsgUpdater.Data
     public class AzureConfigurationService : IAzureConfigurationService
     {
         private readonly IConfiguration _configuration;
-        private Microsoft.Azure.Management.Fluent.IAzure _azure;
+        private Microsoft.Azure.Management.Fluent.IAzure _azureConnection;
 
         public AzureConfigurationService(IConfiguration configuration)
         {
@@ -27,26 +27,26 @@ namespace AzureNsgUpdater.Data
             var servicePrincipal = new ServicePrincipalLoginInformation { ClientId = azureAdSecretDetails.CLIENT_ID, ClientSecret = azureAdSecretDetails.CLIENT_SECRET };
             var creds = new AzureCredentials(servicePrincipal, tenantId: azureAdSecretDetails.TENANT_ID, AzureEnvironment.AzureGlobalCloud); ;
             
-            _azure = Microsoft.Azure.Management.Fluent.Azure.Configure()
+            _azureConnection = Microsoft.Azure.Management.Fluent.Azure.Configure()
                 .Authenticate(creds)
                 .WithSubscription(azureAdSecretDetails.SUBSCRIPTION_ID);
         }
 
         public Microsoft.Azure.Management.Fluent.IAzure GetAzureAppConnection()
         {
-            if (_azure == null)
+            if (_azureConnection == null)
             {
                 CreateAzureAppConnection();
             }
 
-            return _azure;
+            return _azureConnection;
         }
 
         public Microsoft.Azure.Management.Fluent.IAzure RefreshAndReturnNewAzureAppConnection()
         {
             CreateAzureAppConnection();
 
-            return _azure;
+            return _azureConnection;
         }
 
         private AzureAdSecretDetails RetrieveAzureAdSecretConfiguration()
