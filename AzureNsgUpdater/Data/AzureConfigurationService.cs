@@ -10,12 +10,12 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 
 namespace AzureNsgUpdater.Data
 {
-    public class ConfigurationService : IConfigurationService
+    public class AzureConfigurationService : IAzureConfigurationService
     {
         private readonly IConfiguration _configuration;
         private Microsoft.Azure.Management.Fluent.IAzure _azure;
 
-        public ConfigurationService(IConfiguration configuration)
+        public AzureConfigurationService(IConfiguration configuration)
         {
             _configuration = configuration;
         }

@@ -11,13 +11,11 @@ namespace AzureNsgUpdater.Data
 {
     public class NetworkSecurityGroupService : INetworkSecurityGroupService
     {
-        private readonly IConfigurationService _configurationService;
         private readonly Microsoft.Azure.Management.Fluent.IAzure _azure;
 
-        public NetworkSecurityGroupService(IConfigurationService configurationService)
+        public NetworkSecurityGroupService(IAzureConfigurationService azureConfigurationService)
         {
-            _configurationService = configurationService;
-            _azure = _configurationService.GetAzureAppConnection();
+            _azure = azureConfigurationService.GetAzureAppConnection();
         }
 
         public async Task<IPagedCollection<INetworkSecurityGroup>> RetrieveAllNetworkSecurityGroupsAsync()
