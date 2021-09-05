@@ -1,5 +1,5 @@
 using AzureNsgUpdater.Data;
-using AzureNsgUpdater.Classes;
+using AzureNsgUpdater.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -33,8 +33,8 @@ namespace AzureNsgUpdater
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IAzureConfigurationService, AzureConfigurationService>();
-            services.AddSingleton<INetworkSecurityGroupService, NetworkSecurityGroupService>();
+            services.AddScoped<IAzureConfigurationService, AzureConfigurationService>();
+            services.AddScoped<INetworkSecurityGroupService, NetworkSecurityGroupService>();
 
             var initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
             var msIdentityConfiguration = Configuration.GetSection("AzureAd");
