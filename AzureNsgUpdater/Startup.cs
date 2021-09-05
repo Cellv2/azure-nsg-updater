@@ -33,9 +33,8 @@ namespace AzureNsgUpdater
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            // singleton should be fine - the connection details should not change between requests or objects
-            IAzureAdSecretDetails azureAdSecretDetails = new AzureAdSecretDetails { TENANT_ID = Configuration["TENANT_ID"], CLIENT_ID = Configuration["CLIENT_ID"], CLIENT_SECRET = Configuration["CLIENT_SECRET"], SUBSCRIPTION_ID = Configuration["SUBSCRIPTION_ID"] };
-            services.AddSingleton(new NetworkSecurityGroupService(azureAdSecretDetails));
+            services.AddSingleton<IConfigurationService, ConfigurationService>();
+            services.AddSingleton<INetworkSecurityGroupService, NetworkSecurityGroupService>();
 
             var initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
             var msIdentityConfiguration = Configuration.GetSection("AzureAd");

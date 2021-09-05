@@ -12,23 +12,24 @@ using AzureNsgUpdater.Classes;
 
 namespace AzureNsgUpdater.Data
 {
-    public class NetworkSecurityGroupService
+    public class NetworkSecurityGroupService : INetworkSecurityGroupService
     {
-        private readonly IAzureAdSecretDetails _azureAdSecretDetails;
+        private readonly IConfigurationService _configurationService;
 
-        public NetworkSecurityGroupService(IAzureAdSecretDetails azureAdSecretDetails)
+        public NetworkSecurityGroupService(IConfigurationService configurationService)
         {
-            _azureAdSecretDetails = azureAdSecretDetails;
+            _configurationService = configurationService;
         }
 
         public async Task<IPagedCollection<INetworkSecurityGroup>> RetrieveAllNetworkSecurityGroupsAsync()
         {
+            AzureAdSecretDetails azureAdSecretDetails = _configurationService.RetrieveAzureAdSecretConfiguration();
 
-            var servicePrincipal = new ServicePrincipalLoginInformation { ClientId = _azureAdSecretDetails.CLIENT_ID, ClientSecret = _azureAdSecretDetails.CLIENT_SECRET };
-            var creds = new AzureCredentials(servicePrincipal, tenantId: _azureAdSecretDetails.TENANT_ID, AzureEnvironment.AzureGlobalCloud); ;
+            var servicePrincipal = new ServicePrincipalLoginInformation { ClientId = azureAdSecretDetails.CLIENT_ID, ClientSecret = azureAdSecretDetails.CLIENT_SECRET };
+            var creds = new AzureCredentials(servicePrincipal, tenantId: azureAdSecretDetails.TENANT_ID, AzureEnvironment.AzureGlobalCloud); ;
             var azure = Microsoft.Azure.Management.Fluent.Azure.Configure()
                 .Authenticate(creds)
-                .WithSubscription(_azureAdSecretDetails.SUBSCRIPTION_ID);
+                .WithSubscription(azureAdSecretDetails.SUBSCRIPTION_ID);
 
 
             // example for resourceGroups: https://docs.microsoft.com/en-us/dotnet/api/overview/azure/resource-manager

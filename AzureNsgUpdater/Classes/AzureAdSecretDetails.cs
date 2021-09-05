@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace AzureNsgUpdater.Classes
 {
-    public class AzureAdSecretDetails : IAzureAdSecretDetails
+    public class AzureAdSecretDetails
     {
         public string TENANT_ID { get; set; }
         public string CLIENT_ID { get; set; }
