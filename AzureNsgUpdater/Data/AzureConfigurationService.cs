@@ -1,4 +1,4 @@
-﻿using AzureNsgUpdater.Classes;
+﻿using AzureNsgUpdater.Models;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -20,18 +20,6 @@ namespace AzureNsgUpdater.Data
             _configuration = configuration;
         }
 
-        private void CreateAzureAppConnection()
-        {
-            AzureAdSecretDetails azureAdSecretDetails = RetrieveAzureAdSecretConfiguration();
-
-            var servicePrincipal = new ServicePrincipalLoginInformation { ClientId = azureAdSecretDetails.CLIENT_ID, ClientSecret = azureAdSecretDetails.CLIENT_SECRET };
-            var creds = new AzureCredentials(servicePrincipal, tenantId: azureAdSecretDetails.TENANT_ID, AzureEnvironment.AzureGlobalCloud); ;
-            
-            _azureConnection = Microsoft.Azure.Management.Fluent.Azure.Configure()
-                .Authenticate(creds)
-                .WithSubscription(azureAdSecretDetails.SUBSCRIPTION_ID);
-        }
-
         public Microsoft.Azure.Management.Fluent.IAzure GetAzureAppConnection()
         {
             if (_azureConnection == null)
@@ -49,9 +37,21 @@ namespace AzureNsgUpdater.Data
             return _azureConnection;
         }
 
+        private void CreateAzureAppConnection()
+        {
+            AzureAdSecretDetails azureAdSecretDetails = RetrieveAzureAdSecretConfiguration();
+
+            var servicePrincipal = new ServicePrincipalLoginInformation { ClientId = azureAdSecretDetails.ClientId, ClientSecret = azureAdSecretDetails.ClientSecret };
+            var creds = new AzureCredentials(servicePrincipal, tenantId: azureAdSecretDetails.TenantId, AzureEnvironment.AzureGlobalCloud); ;
+
+            _azureConnection = Microsoft.Azure.Management.Fluent.Azure.Configure()
+                .Authenticate(creds)
+                .WithSubscription(azureAdSecretDetails.SubscriptionId);
+        }
+
         private AzureAdSecretDetails RetrieveAzureAdSecretConfiguration()
         {
-            return new AzureAdSecretDetails { TENANT_ID = _configuration["TENANT_ID"], CLIENT_ID = _configuration["CLIENT_ID"], CLIENT_SECRET = _configuration["CLIENT_SECRET"], SUBSCRIPTION_ID = _configuration["SUBSCRIPTION_ID"] };
+            return new AzureAdSecretDetails { TenantId = _configuration["TENANT_ID"], ClientId = _configuration["CLIENT_ID"], ClientSecret = _configuration["CLIENT_SECRET"], SubscriptionId = _configuration["SUBSCRIPTION_ID"] };
         }
     }
 }
