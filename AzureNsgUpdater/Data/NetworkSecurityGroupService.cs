@@ -9,6 +9,7 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 
 namespace AzureNsgUpdater.Data
 {
+    // https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.management.fluent.azure?view=azure-dotnet
     public class NetworkSecurityGroupService : INetworkSecurityGroupService
     {
         private readonly Microsoft.Azure.Management.Fluent.IAzure _azure;
@@ -25,9 +26,10 @@ namespace AzureNsgUpdater.Data
             return nsgs;
         }
 
-        public void RetireveNetworkSecurityGroupRules()
-        {
-            //TODO: Implement
-        }
+        //public async Task RetireveNetworkSecurityGroupRulesAsync()
+        //{
+        //    //TODO: Implement
+            
+        //}
     }
 }

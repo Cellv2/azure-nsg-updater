@@ -2,6 +2,7 @@
 
 @using Microsoft.Identity.Web
 @using AzureNsgUpdater.Data
+@using Microsoft.Azure.Management.Network.Fluent
 
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 @inject INetworkSecurityGroupService NetworkSecurityGroupService
@@ -18,15 +19,51 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
+                <th>NSG Name</th>
+                <th>Security Rule Name</th>
+                <th>Direction</th>
+                <th>Action</th>
+                <th>IP Addresses</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var nsg in networkSecurityGroupPageDataList)
             {
-                <tr>
-                    <td>@nsg.Name</td>
-                </tr>
+                @foreach (var secRule in nsg.SecurityRules)
+                {
+                    <tr>
+                        <td>@nsg.Name</td>
+                        <td>@secRule.Name</td>
+                        <td>@secRule.Direction</td>
+                        <td>@secRule.Access</td>
+                        @if (secRule.SourceAddressPrefix != null)
+                        {
+                            <td>@secRule.SourceAddressPrefix</td>
+                        }
+                        else if (secRule.SourceAddressPrefixes.Count != 0)
+                        {
+                            @* TODO: fix up styling *@
+                            <td style="padding: 0;">
+                                <table>
+
+                                    @foreach (var sourceAddressPrefix in secRule.SourceAddressPrefixes)
+                                    {
+                                        <tr>
+                                            <td style="border: none;">@sourceAddressPrefix</td>
+                                        </tr>
+
+                                    }
+                                </table>
+                            </td>
+                        }
+                        else
+                        {
+                            <td>No source IP addresses found? How? It's mandatory!</td>
+                        }
+
+                    </tr>
+                }
+
             }
         </tbody>
     </table>
@@ -46,6 +83,7 @@ else
             {
                 NetworkSecurityGroupPageData data = new NetworkSecurityGroupPageData();
                 data.Name = nsg.Name;
+                data.SecurityRules = nsg.SecurityRules.Values.ToList();
 
                 networkSecurityGroupPageDataList.Add(data);
             }
@@ -59,5 +97,6 @@ else
     public class NetworkSecurityGroupPageData
     {
         public string Name;
+        public List<INetworkSecurityRule> SecurityRules;
     }
 }
