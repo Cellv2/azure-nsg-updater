@@ -7,6 +7,6 @@ namespace AzureNsgUpdater.Data
     public interface INetworkSecurityGroupService
     {
         Task<IPagedCollection<INetworkSecurityGroup>> RetrieveAllNetworkSecurityGroupsAsync();
-        //Task RetireveNetworkSecurityGroupRulesAsync();
+        Task AddSourceIpAddressToSecurityRuleAsync(INetworkSecurityRule networkSecurityRule);
     }
 }

@@ -19,6 +19,7 @@ else
     <table class="table">
         <thead>
             <tr>
+                <th></th>
                 <th>NSG Name</th>
                 <th>Security Rule Name</th>
                 <th>Direction</th>
@@ -32,6 +33,7 @@ else
                 @foreach (var secRule in nsg.SecurityRules)
                 {
                     <tr>
+                        <td><button class="btn-outline-primary" @onclick="async () => await AddSourceIp(secRule)">Add 192.168.19.19</button></td>
                         <td>@nsg.Name</td>
                         <td>@secRule.Name</td>
                         <td>@secRule.Direction</td>
@@ -98,5 +100,10 @@ else
     {
         public string Name;
         public List<INetworkSecurityRule> SecurityRules;
+    }
+
+    private async Task AddSourceIp(INetworkSecurityRule networkSecurityRule)
+    {
+        await NetworkSecurityGroupService.AddSourceIpAddressToSecurityRuleAsync(networkSecurityRule);
     }
 }
