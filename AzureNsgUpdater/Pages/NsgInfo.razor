@@ -20,6 +20,7 @@ else
         <thead>
             <tr>
                 <th></th>
+                <th></th>
                 <th>NSG Name</th>
                 <th>Security Rule Name</th>
                 <th>Direction</th>
@@ -34,6 +35,7 @@ else
                 {
                     <tr>
                         <td><button class="btn-outline-primary" @onclick="async () => await AddSourceIp(secRule)">Add 192.168.19.19</button></td>
+                        <td><input type="checkbox" @onchange="(args) => updateRulesToUpdate(secRule, args)" /></td>
                         <td>@nsg.Name</td>
                         <td>@secRule.Name</td>
                         <td>@secRule.Direction</td>
@@ -105,5 +107,23 @@ else
     private async Task AddSourceIp(INetworkSecurityRule networkSecurityRule)
     {
         await NetworkSecurityGroupService.AddSourceIpAddressToSecurityRuleAsync(networkSecurityRule);
+    }
+
+    private Dictionary<string, INetworkSecurityRule> rulesToUpdate = new Dictionary<string, INetworkSecurityRule>();
+    private void updateRulesToUpdate(INetworkSecurityRule secRule, ChangeEventArgs args)
+    {
+        Console.WriteLine(args.Value.ToString());
+        // TODO: wtf how do I do this properly?
+        if (bool.Parse(args.Value.ToString()))
+        {
+            rulesToUpdate.Add(secRule.Key, secRule);
+            Console.WriteLine("Added rule");
+        }
+        else
+        {
+            rulesToUpdate.Remove(secRule.Key);
+            Console.WriteLine("Removed rule");
+        }
+        Console.WriteLine(string.Join(",", rulesToUpdate.Keys.ToArray()));
     }
 }
