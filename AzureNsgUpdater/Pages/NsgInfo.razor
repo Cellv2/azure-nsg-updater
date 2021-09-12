@@ -22,7 +22,6 @@ else
         <input type="text"
                id="ipAddressInput"
                class="form-control @((isIpAddressValid) ? "is-valid" : "is-invalid")"
-               
                aria-describedby="validateIpAddressFeedback"
                required
                @bind="@ipAddress"
@@ -96,14 +95,23 @@ else
         {
             var allNsgs = await NetworkSecurityGroupService.RetrieveAllNetworkSecurityGroupsAsync();
 
-            foreach (var nsg in allNsgs)
+            if (allNsgs != null)
             {
-                NetworkSecurityGroupPageData data = new NetworkSecurityGroupPageData();
-                data.Name = nsg.Name;
-                data.SecurityRules = nsg.SecurityRules.Values.ToList();
+                foreach (var nsg in allNsgs)
+                {
+                    NetworkSecurityGroupPageData data = new NetworkSecurityGroupPageData();
+                    data.Name = nsg.Name;
+                    data.SecurityRules = nsg.SecurityRules.Values.ToList();
 
-                networkSecurityGroupPageDataList.Add(data);
+                    networkSecurityGroupPageDataList.Add(data);
+                }
             }
+            else
+            {
+                //TPDO: add UI error
+                Console.WriteLine("Failed to retrieve network security groups from Azure");
+            }
+
         }
         catch (Exception ex)
         {
@@ -120,8 +128,25 @@ else
 
     private async Task AddSourceIps()
     {
-        if (isIpAddressValid)
-            await NetworkSecurityGroupService.AddSourceIpAddressToSecurityRuleAsync(rulesToUpdate.Values.ToList(), ipAddress);
+        try
+        {
+            if (isIpAddressValid)
+            {
+                await NetworkSecurityGroupService.AddSourceIpAddressToSecurityRuleAsync(rulesToUpdate.Values.ToList(), ipAddress);
+
+            }
+            else
+            {
+                //TPDO: add UI error
+                Console.WriteLine("IP addreess was not accepted by Azure");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            //TPDO: add UI error
+        }
+
     }
 
     private Dictionary<string, INetworkSecurityRule> rulesToUpdate = new Dictionary<string, INetworkSecurityRule>();

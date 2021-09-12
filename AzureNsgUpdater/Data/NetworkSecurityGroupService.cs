@@ -22,8 +22,18 @@ namespace AzureNsgUpdater.Data
         public async Task<IPagedCollection<INetworkSecurityGroup>> RetrieveAllNetworkSecurityGroupsAsync()
         {
             // example for resourceGroups: https://docs.microsoft.com/en-us/dotnet/api/overview/azure/resource-manager
-            var nsgs = await _azure.NetworkSecurityGroups.ListAsync();
-            return nsgs;
+            try
+            {
+                var nsgs = await _azure.NetworkSecurityGroups.ListAsync();
+                return nsgs;
+            }
+            catch (Exception ex)
+            {
+                // TODO: fix up error logging
+                Console.WriteLine(ex);
+                return null;
+            }
+
         }
 
         public async Task AddSourceIpAddressToSecurityRuleAsync(INetworkSecurityRule networkSecurityRule, string ipAddress)
@@ -32,7 +42,16 @@ namespace AzureNsgUpdater.Data
             // TODO: add logic for FromAddress vs FromAddresses, as well as merge IPs as required
             //networkSecurityGroupToUpdate.Update().UpdateRule(networkSecurityRule.Name).FromAddress("192.168.19.30");
             networkSecurityGroupToUpdate.Update().UpdateRule(networkSecurityRule.Name).FromAddress(ipAddress);
-            await networkSecurityGroupToUpdate.Update().ApplyAsync();
+            try
+            {
+                await networkSecurityGroupToUpdate.Update().ApplyAsync();
+            }
+            catch (Exception ex)
+            {
+                // TODO: fix up error logging
+                Console.WriteLine(ex);
+            }
+
         }
 
         public async Task AddSourceIpAddressToSecurityRuleAsync(List<INetworkSecurityRule> networkSecurityRules, string ipAddress)
@@ -42,7 +61,8 @@ namespace AzureNsgUpdater.Data
                 try
                 {
                     await AddSourceIpAddressToSecurityRuleAsync(networkSecurityRule, ipAddress);
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     // TODO: fix up error logging
                     Console.WriteLine(ex);
