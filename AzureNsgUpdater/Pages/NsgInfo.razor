@@ -16,6 +16,7 @@
 else
 {
     <h1>Network Security Groups</h1>
+    <input type="text" placeholder="Please enter IP to add" @bind="@ipAddress" @oninput="(args) => setInputIpAddressValue(args.Value.ToString())" />
     <table class="table">
         <thead>
             <tr>
@@ -112,8 +113,7 @@ else
     private Dictionary<string, INetworkSecurityRule> rulesToUpdate = new Dictionary<string, INetworkSecurityRule>();
     private void updateRulesToUpdate(INetworkSecurityRule secRule, ChangeEventArgs args)
     {
-        Console.WriteLine(args.Value.ToString());
-        // TODO: wtf how do I do this properly?
+        // FIXME: wth how do I do this properly? is there really no 'checked' value on anything? How can I access the element itself?
         if (bool.Parse(args.Value.ToString()))
         {
             rulesToUpdate.Add(secRule.Key, secRule);
@@ -125,5 +125,13 @@ else
             Console.WriteLine("Removed rule");
         }
         Console.WriteLine(string.Join(",", rulesToUpdate.Keys.ToArray()));
+    }
+
+    public string ipAddress = "";
+    private void setInputIpAddressValue(string value)
+    {
+        Console.WriteLine("we clicked the thing");
+        ipAddress = value;
+        Console.WriteLine(ipAddress);
     }
 }
