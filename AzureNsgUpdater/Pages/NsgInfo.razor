@@ -3,8 +3,7 @@
 @using Microsoft.Identity.Web
 @using AzureNsgUpdater.Data
 @using Microsoft.Azure.Management.Network.Fluent
-@using System.Text.RegularExpressions;
-
+@using System.Text.RegularExpressions
 
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 @inject INetworkSecurityGroupService NetworkSecurityGroupService
@@ -18,19 +17,24 @@
 else
 {
     <h1>Network Security Groups</h1>
-    <div class="input-group">
+    <div>
+        <label for="ipAddressInput" class="form-label">IP Address</label>
         <input type="text"
-               class="form-control"
-               placeholder="Please enter IP to add"
-               pattern="@ipAddressValidation"
+               id="ipAddressInput"
+               class="form-control @((isIpAddressValid) ? "is-valid" : "is-invalid")"
+               
+               aria-describedby="validateIpAddressFeedback"
+               required
                @bind="@ipAddress"
                @oninput="(args) => setInputIpAddressValue(args.Value.ToString())" />
-               @*@oninput="(args) => validateInputIpAddressValue(args)" />*@
+
+        <div id="validateIpAddressFeedback" class="invalid-feedback">
+            Please enter a valid IP address (CIDR notation not currently accepted)
+        </div>
     </div>
     <table class="table">
         <thead>
             <tr>
-                <th></th>
                 <th></th>
                 <th>NSG Name</th>
                 <th>Security Rule Name</th>
@@ -45,7 +49,6 @@ else
                 @foreach (var secRule in nsg.SecurityRules)
                 {
                     <tr>
-                        <td><button class="btn-outline-primary" @onclick="async () => await AddSourceIp(secRule)">Add 192.168.19.19</button></td>
                         <td><input type="checkbox" @onchange="(args) => setRulesToUpdate(secRule, args)" /></td>
                         <td>@nsg.Name</td>
                         <td>@secRule.Name</td>
@@ -82,12 +85,10 @@ else
             }
         </tbody>
     </table>
-    <button @onclick="AddSourceIps">Update Rules</button>
+    <button class="btn btn-outline-primary" @onclick="AddSourceIps">Update Rules</button>
 }
 
 @code {
-
-    private List<NetworkSecurityGroupPageData> networkSecurityGroupPageDataList = new List<NetworkSecurityGroupPageData>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -110,20 +111,17 @@ else
         }
     }
 
+    private List<NetworkSecurityGroupPageData> networkSecurityGroupPageDataList = new List<NetworkSecurityGroupPageData>();
     public class NetworkSecurityGroupPageData
     {
         public string Name;
         public List<INetworkSecurityRule> SecurityRules;
     }
 
-    private async Task AddSourceIp(INetworkSecurityRule networkSecurityRule)
+    private async Task AddSourceIps()
     {
-        await NetworkSecurityGroupService.AddSourceIpAddressToSecurityRuleAsync(networkSecurityRule, "196.168.19.20");
-    }
-
-    private void AddSourceIps()
-    {
-        NetworkSecurityGroupService.AddSourceIpAddressToSecurityRuleAsync(rulesToUpdate.Values.ToList(), ipAddress);
+        if (isIpAddressValid)
+            await NetworkSecurityGroupService.AddSourceIpAddressToSecurityRuleAsync(rulesToUpdate.Values.ToList(), ipAddress);
     }
 
     private Dictionary<string, INetworkSecurityRule> rulesToUpdate = new Dictionary<string, INetworkSecurityRule>();
@@ -143,19 +141,31 @@ else
         Console.WriteLine(string.Join(",", rulesToUpdate.Keys.ToArray()));
     }
 
-    public string ipAddress = "";
+    private string ipAddress = "";
     private void setInputIpAddressValue(string value)
     {
-        Console.WriteLine("we clicked the thing");
         ipAddress = value;
-        Console.WriteLine(ipAddress);
+        validateInputIpAddressValue();
     }
 
-    Regex ipAddressValidation = new Regex(@"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", RegexOptions.Compiled);
-    //string ipAddressValidation = new Regex(@"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", RegexOptions.Compiled).ToString();
-    //string ipAddressValidation = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
-    private void validateInputIpAddressValue(ChangeEventArgs args)
+    // while the ,NET IPAddress.TryParse() method does exist, there are so many caveats I'm just going with regex for now
+    //FIXME: this refex allows things like 192.086.1.1 - the 0 should not be allowed here
+    Regex ipV4AddressValidation = new Regex(@"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", RegexOptions.Compiled);
+    //TODO: get a working CIDR check
+    //Regex ipV4AddressValidationWithCidr = new Regex(@"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\/([0-9]|[1-2][0-9]|3[0-2]))?$", RegexOptions.Compiled);
+    Regex ipV6AddressValidation = new Regex(@"(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))
+");
+    bool isIpAddressValid = false;
+    private void validateInputIpAddressValue()
     {
-        
+        bool isValueValid = ipV4AddressValidation.IsMatch(ipAddress) || ipV6AddressValidation.IsMatch(ipAddress);
+        if (isValueValid)
+        {
+            isIpAddressValid = true;
+        }
+        else
+        {
+            isIpAddressValid = false;
+        }
     }
 }
