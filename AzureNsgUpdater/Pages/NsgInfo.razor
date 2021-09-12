@@ -3,6 +3,8 @@
 @using Microsoft.Identity.Web
 @using AzureNsgUpdater.Data
 @using Microsoft.Azure.Management.Network.Fluent
+@using System.Text.RegularExpressions;
+
 
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 @inject INetworkSecurityGroupService NetworkSecurityGroupService
@@ -16,7 +18,15 @@
 else
 {
     <h1>Network Security Groups</h1>
-    <input type="text" placeholder="Please enter IP to add" @bind="@ipAddress" @oninput="(args) => setInputIpAddressValue(args.Value.ToString())" />
+    <div class="input-group">
+        <input type="text"
+               class="form-control"
+               placeholder="Please enter IP to add"
+               pattern="@ipAddressValidation"
+               @bind="@ipAddress"
+               @oninput="(args) => setInputIpAddressValue(args.Value.ToString())" />
+               @*@oninput="(args) => validateInputIpAddressValue(args)" />*@
+    </div>
     <table class="table">
         <thead>
             <tr>
@@ -36,7 +46,7 @@ else
                 {
                     <tr>
                         <td><button class="btn-outline-primary" @onclick="async () => await AddSourceIp(secRule)">Add 192.168.19.19</button></td>
-                        <td><input type="checkbox" @onchange="(args) => updateRulesToUpdate(secRule, args)" /></td>
+                        <td><input type="checkbox" @onchange="(args) => setRulesToUpdate(secRule, args)" /></td>
                         <td>@nsg.Name</td>
                         <td>@secRule.Name</td>
                         <td>@secRule.Direction</td>
@@ -72,6 +82,7 @@ else
             }
         </tbody>
     </table>
+    <button @onclick="AddSourceIps">Update Rules</button>
 }
 
 @code {
@@ -107,11 +118,16 @@ else
 
     private async Task AddSourceIp(INetworkSecurityRule networkSecurityRule)
     {
-        await NetworkSecurityGroupService.AddSourceIpAddressToSecurityRuleAsync(networkSecurityRule);
+        await NetworkSecurityGroupService.AddSourceIpAddressToSecurityRuleAsync(networkSecurityRule, "196.168.19.20");
+    }
+
+    private void AddSourceIps()
+    {
+        NetworkSecurityGroupService.AddSourceIpAddressToSecurityRuleAsync(rulesToUpdate.Values.ToList(), ipAddress);
     }
 
     private Dictionary<string, INetworkSecurityRule> rulesToUpdate = new Dictionary<string, INetworkSecurityRule>();
-    private void updateRulesToUpdate(INetworkSecurityRule secRule, ChangeEventArgs args)
+    private void setRulesToUpdate(INetworkSecurityRule secRule, ChangeEventArgs args)
     {
         // FIXME: wth how do I do this properly? is there really no 'checked' value on anything? How can I access the element itself?
         if (bool.Parse(args.Value.ToString()))
@@ -133,5 +149,13 @@ else
         Console.WriteLine("we clicked the thing");
         ipAddress = value;
         Console.WriteLine(ipAddress);
+    }
+
+    Regex ipAddressValidation = new Regex(@"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", RegexOptions.Compiled);
+    //string ipAddressValidation = new Regex(@"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", RegexOptions.Compiled).ToString();
+    //string ipAddressValidation = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
+    private void validateInputIpAddressValue(ChangeEventArgs args)
+    {
+        
     }
 }

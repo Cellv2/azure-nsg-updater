@@ -26,12 +26,28 @@ namespace AzureNsgUpdater.Data
             return nsgs;
         }
 
-        public async Task AddSourceIpAddressToSecurityRuleAsync(INetworkSecurityRule networkSecurityRule)
+        public async Task AddSourceIpAddressToSecurityRuleAsync(INetworkSecurityRule networkSecurityRule, string ipAddress)
         {
             var networkSecurityGroupToUpdate = await _azure.NetworkSecurityGroups.GetByIdAsync(networkSecurityRule.Parent.Id);
             // TODO: add logic for FromAddress vs FromAddresses, as well as merge IPs as required
-            networkSecurityGroupToUpdate.Update().UpdateRule(networkSecurityRule.Name).FromAddress("192.168.19.30");
+            //networkSecurityGroupToUpdate.Update().UpdateRule(networkSecurityRule.Name).FromAddress("192.168.19.30");
+            networkSecurityGroupToUpdate.Update().UpdateRule(networkSecurityRule.Name).FromAddress(ipAddress);
             await networkSecurityGroupToUpdate.Update().ApplyAsync();
+        }
+
+        public async Task AddSourceIpAddressToSecurityRuleAsync(List<INetworkSecurityRule> networkSecurityRules, string ipAddress)
+        {
+            foreach (var networkSecurityRule in networkSecurityRules)
+            {
+                try
+                {
+                    await AddSourceIpAddressToSecurityRuleAsync(networkSecurityRule, ipAddress);
+                } catch (Exception ex)
+                {
+                    // TODO: fix up error logging
+                    Console.WriteLine(ex);
+                }
+            }
         }
     }
 }
